@@ -14,86 +14,153 @@
             background-color: #f0f0f0;
         }
         .calculator {
+            background-color: #fff;
             padding: 20px;
             border-radius: 10px;
-            background-color: #fff;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
-        input[type="number"], select {
-            padding: 10px;
-            margin: 10px 0;
+        .display {
             width: 100%;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            padding: 10px;
-            width: 100%;
-            background-color: #007BFF;
-            color: white;
-            font-size: 16px;
-            border: none;
+            height: 40px;
+            margin-bottom: 10px;
+            text-align: right;
+            padding: 5px;
+            font-size: 1.5em;
             border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .buttons button {
+            padding: 20px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #0056b3;
+        .buttons button:hover {
+            background-color: #e0e0e0;
         }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
+        .buttons .operator {
+            background-color: rgb(194, 194, 194);
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        .buttons .operator:hover {
+            background-color: rgb(223, 223, 223);
+        }
+        .buttons .equals {
+            background-color: rgb(194, 194, 194);
+            color: #fff;
+            grid-column: span 2;
+        }
+        .buttons .equals:hover {
+            background-color: rgb(239, 239, 239);
+        }
+        .buttons .clear {
+            background-color: #f44336;
+            color: #fff;
+            grid-column: span 2;
+        }
+        .buttons .clear:hover {
+            background-color: #e53935;
         }
     </style>
 </head>
 <body>
 
 <div class="calculator">
-    <h2>Simple Calculator</h2>
-    <form id="calculator-form">
-        <input type="number" id="operand1" placeholder="Enter first number" required>
-        <select id="operation">
-            <option value="add">+</option>
-            <option value="subtract">-</option>
-            <option value="multiply">*</option>
-            <option value="divide">/</option>
-        </select>
-        <input type="number" id="operand2" placeholder="Enter second number" required>
-        <button type="button" onclick="calculate()">Calculate</button>
-    </form>
-    <div class="result" id="result"></div>
+    <input type="text" id="display" class="display" readonly>
+    <div class="buttons">
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button class="operator" onclick="chooseOperation('/')">/</button>
+        
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button class="operator" onclick="chooseOperation('*')">*</button>
+        
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button class="operator" onclick="chooseOperation('-')">-</button>
+        
+        <button onclick="appendNumber('0')">0</button>
+        <button onclick="appendNumber('.')">.</button>
+        <button class="equals" onclick="calculate()">=</button>
+        <button class="operator" onclick="chooseOperation('+')">+</button>
+        
+        <button class="clear" onclick="clearDisplay()">C</button>
+    </div>
 </div>
 
 <script>
-    function calculate() {
-        const operand1 = parseFloat(document.getElementById('operand1').value);
-        const operand2 = parseFloat(document.getElementById('operand2').value);
-        const operation = document.getElementById('operation').value;
-        let result;
+let display = document.getElementById('display');
+let currentOperand = '';
+let previousOperand = '';
+let operation = undefined;
 
-        if (isNaN(operand1) || isNaN(operand2)) {
-            result = 'Please enter valid numbers.';
-        } else {
-            if (operation === 'add') {
-                result = operand1 + operand2;
-            } else if (operation === 'subtract') {
-                result = operand1 - operand2;
-            } else if (operation === 'multiply') {
-                result = operand1 * operand2;
-            } else if (operation === 'divide') {
-                if (operand2 !== 0) {
-                    result = operand1 / operand2;
-                } else {
-                    result = 'Cannot divide by zero.';
-                }
-            } else {
-                result = 'Invalid operation selected.';
-            }
-        }
+function appendNumber(number) {
+    if (number === '.' && currentOperand.includes('.')) return;
+    currentOperand = currentOperand + number;
+    updateDisplay();
+}
 
-        document.getElementById('result').innerText = `Result: ${result}`;
+function chooseOperation(op) {
+    if (currentOperand === '') return;
+    if (previousOperand !== '') {
+        calculate(); 
     }
+    operation = op;
+    previousOperand = currentOperand;
+    currentOperand = '';
+    updateDisplay();
+}
+
+function calculate() {
+    let result;
+    const prev = parseFloat(previousOperand);
+    const current = parseFloat(currentOperand);
+    
+    if (isNaN(prev) || isNaN(current)) return;
+
+    if (operation === '+') {
+        result = prev + current;
+    } else if (operation === '-') {
+        result = prev - current;
+    } else if (operation === '*') {
+        result = prev * current;
+    } else if (operation === '/') {
+        result = prev / current;
+    } else {
+        return;
+    }
+
+    currentOperand = result.toString();
+    operation = undefined;
+    previousOperand = '';
+    updateDisplay();
+}
+
+function updateDisplay() {
+    display.value = previousOperand + (operation || '') + currentOperand;
+}
+
+function clearDisplay() {
+    currentOperand = '';
+    previousOperand = '';
+    operation = undefined;
+    updateDisplay();
+}
+
 </script>
 
 </body>
-</html>
+</html> 
